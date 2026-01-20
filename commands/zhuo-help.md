@@ -12,6 +12,9 @@ description: 显示琢插件的使用说明
 |------|------|
 | `/zhuo:zhuo-loop "<task>" [options]` | 启动打磨循环 |
 | `/zhuo:zhuo-cancel` | 取消当前循环 |
+| `/zhuo:zhuo-wait` | 等待限额重置后恢复 |
+| `/zhuo:zhuo-wait --daemon` | 后台守护，自动恢复 |
+| `/zhuo:zhuo-status` | 查看循环和限额状态 |
 | `/zhuo:zhuo-help` | 显示此帮助 |
 
 ## 参数
@@ -44,6 +47,23 @@ description: 显示琢插件的使用说明
 1. 启动循环，执行任务
 2. Stop Hook 阻止退出，继续迭代
 3. 检测到 `<promise>` 或达到最大迭代次数时结束
+
+## 限额恢复
+
+当遇到 Claude Code 使用限额时：
+
+```bash
+# 方式 1: 前台等待（显示倒计时）
+/zhuo:zhuo-wait
+
+# 方式 2: 后台守护（自动检测和恢复）
+/zhuo:zhuo-wait --daemon
+
+# 查看状态
+/zhuo:zhuo-status
+```
+
+琢会自动检测限额重置时间，等待后恢复任务。
 
 ---
 
