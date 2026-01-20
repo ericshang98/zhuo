@@ -1,0 +1,9 @@
+{
+  "name": "zhuo",
+  "version": "1.0.0",
+  "description": "琢 - 玉不琢不成器。通过匠人与知音的对话，让作品持续打磨直至完美。Implementation of iterative refinement loops for Claude Code.",
+  "author": {
+    "name": "Eric",
+    "email": ""
+  }
+}
