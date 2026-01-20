@@ -1,6 +1,6 @@
 ---
 name: zhuo-loop
-description: 琢打磨循环 - 迭代式开发直到完美。当用户说"打磨"、"琢"、"迭代改进"、"追求完美"、"反复优化"时使用。Use for iterative refinement loops where Claude polishes work until completion.
+description: 琢打磨循环 - 迭代式开发直到完美。当用户说"打磨"、"琢"、"迭代改进"、"追求完美"、"反复优化"、"启动循环"时使用。Use for iterative refinement loops where Claude polishes work until completion.
 user-invocable: true
 ---
 
@@ -13,26 +13,34 @@ user-invocable: true
 当用户请求启动打磨循环时，执行初始化脚本：
 
 ```bash
-# 查找 zhuo 插件目录
-if [[ -f "./scripts/setup-zhuo-loop.sh" ]]; then
-    bash "./scripts/setup-zhuo-loop.sh" $ARGUMENTS
-elif [[ -f "${CLAUDE_PROJECT_ROOT}/scripts/setup-zhuo-loop.sh" ]]; then
-    bash "${CLAUDE_PROJECT_ROOT}/scripts/setup-zhuo-loop.sh" $ARGUMENTS
-else
-    ZHUO_DIR=$(find ~/.claude/plugins -name "zhuo" -type d 2>/dev/null | head -1)
-    if [[ -n "$ZHUO_DIR" ]] && [[ -f "$ZHUO_DIR/scripts/setup-zhuo-loop.sh" ]]; then
-        bash "$ZHUO_DIR/scripts/setup-zhuo-loop.sh" $ARGUMENTS
-    else
-        echo "错误: 找不到 setup-zhuo-loop.sh"
-        exit 1
+# 尝试多个可能的路径
+SCRIPT=""
+for path in \
+    "${CLAUDE_PLUGIN_ROOT}/scripts/setup-zhuo-loop.sh" \
+    "${CLAUDE_PROJECT_ROOT}/scripts/setup-zhuo-loop.sh" \
+    "${CLAUDE_PROJECT_ROOT}/zhuo/scripts/setup-zhuo-loop.sh" \
+    "./zhuo/scripts/setup-zhuo-loop.sh" \
+    "./scripts/setup-zhuo-loop.sh" \
+    "$(find . -name 'setup-zhuo-loop.sh' -type f 2>/dev/null | head -1)"
+do
+    if [[ -f "$path" ]]; then
+        SCRIPT="$path"
+        break
     fi
+done
+
+if [[ -n "$SCRIPT" ]]; then
+    bash "$SCRIPT" $ARGUMENTS
+else
+    echo "错误: 找不到 setup-zhuo-loop.sh"
+    echo "请确保 zhuo 插件目录在当前项目中"
 fi
 ```
 
 ## 用法
 
 ```
-/zhuo-loop "任务描述" --max-iterations 5 --completion-promise "完成条件"
+/zhuo:zhuo-loop "任务描述" --max-iterations 5 --completion-promise "完成条件"
 ```
 
 ## 核心机制
