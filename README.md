@@ -9,15 +9,44 @@
 
 ## 快速开始
 
-### 安装
+### 安装方式
+
+**方式一：使用 `--plugin-dir` 加载（推荐开发测试）**
+
+```bash
+# 克隆仓库
+git clone https://github.com/ericshang98/zhuo.git
+
+# 启动 Claude Code 时加载插件
+claude --plugin-dir /path/to/zhuo
+```
+
+**方式二：复制到项目目录**
 
 ```bash
 # 将插件复制到你的项目
 cp -r zhuo /path/to/your/project/
 
-# 或使用 Claude Code 插件系统
-/plugins add /path/to/zhuo
+# 在项目目录中启动 Claude Code
+cd /path/to/your/project
+claude --plugin-dir ./zhuo
 ```
+
+**方式三：安装到插件目录**
+
+```bash
+# 复制到 Claude 插件目录
+cp -r zhuo ~/.claude/plugins/
+
+# 然后正常启动 Claude Code
+claude
+```
+
+### 验证安装
+
+启动后运行 `/zhuo-help`，如果显示帮助信息则安装成功。
+
+> **重要**：命令格式为 `/zhuo:zhuo` 或简写 `/zhuo`（如果没有命名冲突）
 
 ### 使用
 
@@ -204,7 +233,20 @@ zhuo/
 
 ## 技术细节
 
-### Stop Hook 输出
+### 为什么需要 Stop Hook（而非角色扮演）
+
+| 方式 | 控制者 | 可靠性 |
+|------|--------|--------|
+| 角色扮演 | Claude 自己决定 | ❌ 不可靠，可能提前退出 |
+| Stop Hook | 外部脚本强制控制 | ✅ 可靠，代码层面阻止退出 |
+
+Stop Hook 是**代码层面**的控制，不是提示词层面的"请求"：
+- Claude 尝试停止时，`stop-hook.sh` 被操作系统执行
+- 脚本检查状态文件和 transcript
+- 输出 `{"decision": "block"}` 则 Claude **必须**继续
+- 这是 Claude Code 的内置机制，不是角色扮演
+
+### Stop Hook 输出格式
 
 **继续循环**：
 ```json
@@ -213,7 +255,7 @@ zhuo/
 
 **结束循环**：
 ```bash
-exit 0  # 无 JSON 输出
+exit 0  # 无 JSON 输出，允许退出
 ```
 
 ### 状态文件格式
