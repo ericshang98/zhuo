@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.sh",
+            "command": "bash -c 'HOOK=\"\"; for p in \"${CLAUDE_PLUGIN_ROOT}/hooks/stop-hook.sh\" \"./zhuo/hooks/stop-hook.sh\" \"$(find . -path \"*/zhuo/hooks/stop-hook.sh\" 2>/dev/null | head -1)\"; do [[ -f \"$p\" ]] && HOOK=\"$p\" && break; done; [[ -n \"$HOOK\" ]] && bash \"$HOOK\" || exit 0'",
             "timeout": 30
           }
         ]
