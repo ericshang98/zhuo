@@ -11,42 +11,59 @@
 
 ### 安装方式
 
-**方式一：使用 `--plugin-dir` 加载（推荐开发测试）**
+**方式一：使用 `--plugin-dir` 加载（推荐）**
 
 ```bash
-# 克隆仓库
+# 1. 克隆仓库
 git clone https://github.com/ericshang98/zhuo.git
+cd zhuo
 
-# 启动 Claude Code 时加载插件
+# 2. 启动 Claude Code 并加载插件
+claude --plugin-dir .
+
+# 或者指定完整路径
 claude --plugin-dir /path/to/zhuo
 ```
 
-**方式二：复制到项目目录**
+**方式二：复制到项目 `.claude` 目录**
 
 ```bash
-# 将插件复制到你的项目
-cp -r zhuo /path/to/your/project/
+# 复制 skills 和 commands 到项目的 .claude 目录
+mkdir -p /your/project/.claude/skills
+cp -r zhuo/skills/zhuo-loop /your/project/.claude/skills/
+cp -r zhuo/commands/* /your/project/.claude/commands/ 2>/dev/null || true
+cp zhuo/hooks/* /your/project/.claude/hooks/ 2>/dev/null || true
 
-# 在项目目录中启动 Claude Code
-cd /path/to/your/project
-claude --plugin-dir ./zhuo
+# 在项目目录启动
+cd /your/project
+claude
 ```
 
-**方式三：安装到插件目录**
+**方式三：全局安装到个人目录**
 
 ```bash
-# 复制到 Claude 插件目录
-cp -r zhuo ~/.claude/plugins/
+# 复制 skill 到个人目录
+mkdir -p ~/.claude/skills
+cp -r zhuo/skills/zhuo-loop ~/.claude/skills/
 
-# 然后正常启动 Claude Code
-claude
+# 复制 hooks（需要在项目目录下才能生效）
+# hooks 是项目级别的，需要在每个项目中配置
 ```
 
 ### 验证安装
 
-启动后运行 `/zhuo-help`，如果显示帮助信息则安装成功。
+```bash
+# 方式一：使用 skill（推荐）
+# 直接问 Claude："启动琢打磨循环"
 
-> **重要**：命令格式为 `/zhuo:zhuo` 或简写 `/zhuo`（如果没有命名冲突）
+# 方式二：使用 slash command
+/zhuo:zhuo-loop "测试任务" --max-iterations 2
+
+# 方式三：查看帮助
+/zhuo:zhuo-help
+```
+
+> **注意**：插件命令格式为 `/插件名:命令名`，即 `/zhuo:zhuo-loop`
 
 ### 使用
 
