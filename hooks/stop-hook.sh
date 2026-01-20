@@ -93,52 +93,28 @@ else
     sed -i "s/^current_iteration: .*/current_iteration: $NEW_ITERATION/" "$STATE_FILE"
 fi
 
-# 读取原始 prompt
-PROMPT=$(sed -n '/^prompt: |$/,/^[a-z_]*:/{ /^prompt: |$/d; /^[a-z_]*:/d; s/^  //p; }' "$STATE_FILE" | head -20)
+# 读取原始 prompt (单行，用于显示)
+PROMPT=$(sed -n '/^prompt: |$/,/^[a-z_]*:/{ /^prompt: |$/d; /^[a-z_]*:/d; s/^  //p; }' "$STATE_FILE" | head -1 | cut -c1-50)
 
-# 构建继续循环的提示信息
+# 构建继续循环的提示信息 (简洁格式)
 if [[ "$MAX_ITERATIONS" -gt 0 ]]; then
     ITERATION_INFO="第 $NEW_ITERATION 轮 / 最多 $MAX_ITERATIONS 轮"
 else
-    ITERATION_INFO="第 $NEW_ITERATION 轮 (无迭代限制)"
+    ITERATION_INFO="第 $NEW_ITERATION 轮"
 fi
 
-REASON="琢 · 继续打磨 ($ITERATION_INFO)
-
-## 知音审视
-
-在继续下一轮之前，请以知音视角审视当前的工作：
-
-1. **真正体验产出** - 运行代码、阅读文件，像用户一样使用它
-2. **觉察感受** - 哪里满意？哪里还能更好？
-3. **给出反馈** - 对自己诚实，指出可以改进的地方
-
-## 原始任务
-
-$PROMPT
-
-## 本轮工作
-
-以匠人身份继续改进。每一轮打磨都要有实质性进展。"
+# 构建 reason - 使用简洁格式避免 JSON 转义问题
+REASON="琢 · 继续打磨 ($ITERATION_INFO) | 任务: ${PROMPT}..."
 
 if [[ -n "$COMPLETION_PROMISE" ]]; then
-    REASON="$REASON
-
-## 完成循环
-
-当任务完美完成时，输出：
-<promise>$COMPLETION_PROMISE</promise>
-
-只有当这个陈述完全为真时才能输出它。"
+    REASON="$REASON | 完成时输出: <promise>$COMPLETION_PROMISE</promise>"
 fi
 
-# 输出 JSON 阻止退出
-if command -v jq &> /dev/null; then
-    jq -n --arg reason "$REASON" '{"decision": "block", "reason": $reason}'
-else
-    # 手动转义 JSON
-    ESCAPED_REASON=$(printf '%s' "$REASON" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))' 2>/dev/null || echo "\"继续打磨循环\"")
-    echo "{\"decision\": \"block\", \"reason\": $ESCAPED_REASON}"
-fi
+# 输出 JSON 阻止退出 - 使用 python3 确保正确的 JSON 转义
+python3 -c "
+import json
+reason = '''$REASON'''
+print(json.dumps({'decision': 'block', 'reason': reason}))
+" 2>/dev/null || echo '{"decision": "block", "reason": "继续打磨循环"}'
 
 exit 0
